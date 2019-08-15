@@ -1,13 +1,17 @@
 package com.coinweather.android;
 
+import android.Manifest;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -15,6 +19,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.coinweather.android.gson.Forecast;
 import com.coinweather.android.gson.Weather;
 import com.coinweather.android.util.HttpUtil;
@@ -28,7 +37,9 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class WeatherActivity extends AppCompatActivity {
+import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
+
+public class WeatherActivity extends AppCompatActivity  {
 
     private ScrollView weatherLayout;
     private LinearLayout forecastLayout;
@@ -64,8 +75,13 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText = findViewById(R.id.car_wash_text);
         sportText = findViewById(R.id.sport_text);
         bingPicImg = findViewById(R.id.bing_pic_img);
+        Button changePic = findViewById(R.id.change_pic);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather",null);
+        SharedPreferences.Editor editor = preferences.edit();
+        final String picAddress = "http://pic.tsmp4.net/api/yingshi/img.php";
+        editor.putString("bing_pic",picAddress);
+        editor.apply();
         if (weatherString != null){
             Weather weather = Utility.handleWeathetResponse(weatherString);
             showWeatherInfo(weather);
@@ -74,12 +90,13 @@ public class WeatherActivity extends AppCompatActivity {
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
-        String bingPic = preferences.getString("bing_pic",null);
-        if (bingPic != null){
-            Glide.with(this).load(bingPic).into(bingPicImg);
-        }else {
-            loadBingPic();
-        }
+        reLoadPic(picAddress);
+        changePic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reLoadPic(picAddress);
+            }
+        });
     }
 
     public void requestWeather(final String weatherId){
@@ -153,7 +170,7 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void loadBingPic(){
-        String requestBingPic = "http://guolin.tech/api/bing_pic";
+        String requestBingPic = "http://pic.tsmp4.net/api/yingshi/img.php";
         HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -172,6 +189,40 @@ public class WeatherActivity extends AppCompatActivity {
                         Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
                     }
                 });
+            }
+        });
+    }
+
+    private void reLoadPic(String address){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+        final String picAddress = sharedPreferences.getString("bing_pic","http://pic.tsmp4.net/api/yingshi/img.php");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    //GlideUrl glideUrl = new GlideUrl(picAddress, new LazyHeaders.Builder().addHeader("Connection", "close").build());
+                    Glide.with(WeatherActivity.this).load(picAddress)
+                        .thumbnail(Glide.with(WeatherActivity.this).load(R.drawable.default_pic)).fitCenter()
+                        .transition(withCrossFade())
+                        .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            //reLoadPic();
+                            //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                            Toast.makeText(WeatherActivity.this,"图片获取失败，请重试",Toast.LENGTH_SHORT).show();
+                            //Glide.with(WeatherActivity.this).load(sharedPreferences.getString("bing_pic",null)).into(bingPicImg);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            //Toast.makeText(WeatherActivity.this,"222222222222222222222222",Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+                    }).into(bingPicImg);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         });
     }

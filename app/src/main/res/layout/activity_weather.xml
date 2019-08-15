@@ -23,7 +23,24 @@
             android:layout_height="wrap_content"
             android:fitsSystemWindows="true">
             <include layout="@layout/title"/>
-            <include layout="@layout/now"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp">
+                <Button
+                    android:id="@+id/change_pic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="更换背景"
+                    android:background="#8000"
+                    android:layout_centerVertical="true"
+                    android:textColor="#fff"/>
+                <include layout="@layout/now"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"/>
+            </RelativeLayout>
             <include layout="@layout/forecast"/>
             <include layout="@layout/api"/>
             <include layout="@layout/suggestion"/>
