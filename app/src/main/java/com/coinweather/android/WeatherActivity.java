@@ -1,6 +1,7 @@
 package com.coinweather.android;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -29,6 +30,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.coinweather.android.gson.Forecast;
 import com.coinweather.android.gson.Weather;
+import com.coinweather.android.service.AutoUpdateService;
 import com.coinweather.android.util.HttpUtil;
 import com.coinweather.android.util.Utility;
 
@@ -45,7 +47,6 @@ import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOption
 public class WeatherActivity extends AppCompatActivity {
 
     public DrawerLayout drawerLayout;
-    private Button navButton;
     public SwipeRefreshLayout swipeRefreshLayout;
     private String mWeatherId;
     private ScrollView weatherLayout;
@@ -71,7 +72,7 @@ public class WeatherActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_weather);
         drawerLayout = findViewById(R.id.drawer_layout);
-        navButton = findViewById(R.id.nav_button);
+        Button navButton = findViewById(R.id.nav_button);
         weatherLayout = findViewById(R.id.weather_layout);
         titleCity = findViewById(R.id.title_city);
         titleUpdateTime = findViewById(R.id.title_update_time);
@@ -194,6 +195,8 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     private void loadBingPic() {
