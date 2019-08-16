@@ -1,8 +1,8 @@
 package com.coinweather.android.db;
 
-import org.litepal.crud.DataSupport;
+import org.litepal.crud.LitePalSupport;
 
-public class Province extends DataSupport {
+public class Province extends LitePalSupport {
     private int id;
     private String provinceName;
     private int provinceCode;
