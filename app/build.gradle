@@ -9,14 +9,33 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
+        //flavorDimensions "default"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+ /*   productFlavors {
+        qihoo {
+            applicationId 'com.coinweather.android.qihoo'
+        }
+        baidu {
+            applicationId 'com.coinweather.android.baidu'
+        }
+    }*/
+    signingConfigs {
+        config {
+            storeFile file(KEY_PATH)
+            storePassword KEY_PASS
+            keyAlias ALIAS_NAME
+            keyPassword ALIAS_PASS
+        }
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
+
 }
 
 dependencies {
