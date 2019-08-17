@@ -67,8 +67,8 @@ public class WeatherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= 21) {
             View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);//活动布局显示在状态栏上
+            getWindow().setStatusBarColor(Color.TRANSPARENT);//设置状态栏透明色
         }
         setContentView(R.layout.activity_weather);
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -88,12 +88,14 @@ public class WeatherActivity extends AppCompatActivity {
         Button changePic = findViewById(R.id.change_pic);
         swipeRefreshLayout = findViewById(R.id.swipe_refresh);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        //先获取天气数据
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = preferences.getString("weather", null);
         SharedPreferences.Editor editor = preferences.edit();
         final String picAddress = "http://pic.tsmp4.net/api/yingshi/img.php";
         editor.putString("bing_pic", picAddress);
         editor.apply();
+        //有天气数据时直接显示，如果没有则从intent处获取weather_id再进行查询
         if (weatherString != null) {
             Weather weather = Utility.handleWeathetResponse(weatherString);
             mWeatherId = weather.basic.weatherId;
@@ -103,19 +105,23 @@ public class WeatherActivity extends AppCompatActivity {
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(mWeatherId);
         }
+        //设置下拉刷新事件
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 requestWeather(mWeatherId);
             }
         });
+        //每次create Acitivity时重新加载背景图片
         reLoadPic(picAddress);
+        //设置更换背景图片按钮
         changePic.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 reLoadPic(picAddress);
             }
         });
+        //设置重新选择城市的按钮
         navButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -147,6 +153,7 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (weather != null && "ok".equals(weather.status)) {
+                            //把成功获取的天气数据存到SharedPreferences
                             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("weather", responseText);
                             editor.apply();
@@ -230,11 +237,13 @@ public class WeatherActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
+                    //设置Glide加载网络图片发送请求时的监听器，根据请求结果进行不同操作
                     //GlideUrl glideUrl = new GlideUrl(picAddress, new LazyHeaders.Builder().addHeader("Connection", "close").build());
                     Glide.with(WeatherActivity.this).load(picAddress)
-                        .thumbnail(Glide.with(WeatherActivity.this).load(R.drawable.default_pic)).fitCenter()
-                        .transition(withCrossFade())
-                        .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).listener(new RequestListener<Drawable>() {
+                        .thumbnail(Glide.with(WeatherActivity.this).load(R.drawable.default_pic)).fitCenter()//设置切换背景图片时的加载动画
+                        .transition(withCrossFade())//设置切换效果淡入淡出
+                        .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)//设置不使用缓存
+                        .listener(new RequestListener<Drawable>() {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
                             //reLoadPic();
