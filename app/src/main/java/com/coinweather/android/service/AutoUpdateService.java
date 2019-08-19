@@ -36,6 +36,7 @@ public class AutoUpdateService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         updateWeather();
+        //设置每8小时触发一次的定时任务
         AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
         int anHour = 8 * 60 * 60 * 1000;
         long triggerAtTime = SystemClock.elapsedRealtime() + anHour;
